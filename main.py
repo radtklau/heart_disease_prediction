@@ -12,7 +12,3 @@ print(heart_disease.metadata)
   
 # variable information 
 print(heart_disease.variables)
-
-# import os
-# print("PYTHONPATH:", os.environ.get('PYTHONPATH'))
-# print("PATH:", os.environ.get('PATH'))
