@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import make_scorer, accuracy_score
+from sklearn.metrics import make_scorer, accuracy_score, confusion_matrix
 
 def replace_missing_values(data, variables):
     print("Missing values found in the dataset.")
@@ -52,7 +52,7 @@ def split_data(data):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     return X_train, X_test, y_train, y_test
 
-def train_dt(X_train, y_train):
+def train_dt(X_train, y_train): #TODO: Add hyperparameter tuning
     print("Training Decision Tree Classifier...")
     dt_model = DecisionTreeClassifier(random_state=42)
     dt_model.fit(X_train, y_train)
@@ -62,8 +62,13 @@ def evaluate_model(model, X_test, y_test):
     print("Evaluating model...")
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)
     print(f"Accuracy: {accuracy:.3f}")
-    return accuracy
+    print("Confusion Matrix:")
+    labels = [0, 1]  # You can modify this depending on your target classes
+    # Print confusion matrix with row and column labels
+    print(pd.DataFrame(cm, index=[f'True {label}' for label in labels], columns=[f'Predicted {label}' for label in labels]))
+    return accuracy, cm
 
 if __name__ == "__main__":
     heart_disease = fetch_ucirepo(id=45)
@@ -84,7 +89,7 @@ if __name__ == "__main__":
 
     dt_model = train_dt(X_train, y_train)
 
-    accuracy = evaluate_model(dt_model, X_test, y_test)
+    accuracy, cm = evaluate_model(dt_model, X_test, y_test)
 
     print("Model training and evaluation completed.")
 
