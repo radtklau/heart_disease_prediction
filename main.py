@@ -49,13 +49,21 @@ def split_data(data):
     print("Splitting data into training and testing sets...")
     X = data.original.drop(columns=['num'])
     y = data.original['num']
-    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    return X, y #X_train, X_test, y_train, y_test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    return X_train, X_test, y_train, y_test
 
-def train_dt(X, y):
+def train_dt(X_train, y_train):
+    print("Training Decision Tree Classifier...")
     dt_model = DecisionTreeClassifier(random_state=42)
-    cv_scores = cross_val_score(dt_model, X, y, cv=5, scoring='accuracy')
-    return cv_scores
+    dt_model.fit(X_train, y_train)
+    return dt_model
+
+def evaluate_model(model, X_test, y_test):
+    print("Evaluating model...")
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy:.3f}")
+    return accuracy
 
 if __name__ == "__main__":
     heart_disease = fetch_ucirepo(id=45)
@@ -72,7 +80,13 @@ if __name__ == "__main__":
 
     data = one_hot_encode(data, variables)
 
-    X, y = split_data(data)
-    cv_scores = train_dt(X, y)
-    print(f"Cross-validation scores: {cv_scores}")
+    X_train, X_test, y_train, y_test = split_data(data)
+
+    dt_model = train_dt(X_train, y_train)
+
+    accuracy = evaluate_model(dt_model, X_test, y_test)
+
+    print("Model training and evaluation completed.")
+
+
 
