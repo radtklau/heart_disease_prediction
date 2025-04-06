@@ -2,6 +2,10 @@ from ucimlrepo import fetch_ucirepo
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import make_scorer, accuracy_score
 
 def replace_missing_values(data, variables):
     print("Missing values found in the dataset.")
@@ -26,6 +30,9 @@ def replace_missing_values(data, variables):
         print("Still missing values after replacement.")
     else:
         print("All missing values have been replaced.")
+
+    # Convert 'num' column to binary (0 or 1)
+    data.original['num'] = data.original['num'].apply(lambda x: 1 if x > 0 else x)
     return data
 
 def one_hot_encode(data, variables):
@@ -38,8 +45,20 @@ def one_hot_encode(data, variables):
             data.original.drop(col, axis=1, inplace=True)
     return data
 
+def split_data(data):
+    print("Splitting data into training and testing sets...")
+    X = data.original.drop(columns=['num'])
+    y = data.original['num']
+    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    return X, y #X_train, X_test, y_train, y_test
+
+def train_dt(X, y):
+    dt_model = DecisionTreeClassifier(random_state=42)
+    cv_scores = cross_val_score(dt_model, X, y, cv=5, scoring='accuracy')
+    return cv_scores
+
 if __name__ == "__main__":
-    heart_disease = fetch_ucirepo(id=45) 
+    heart_disease = fetch_ucirepo(id=45)
     data = heart_disease.data
     metadata = heart_disease.metadata
     variables = heart_disease.variables
@@ -47,10 +66,13 @@ if __name__ == "__main__":
     print("Checking data for missing values...")
     missing_values = data.original.isnull().values.any()
     if missing_values:
-        data = replace_missing_values(data,variables)
+        data = replace_missing_values(data, variables)
     else:
         print("No missing values found in the dataset.")
 
-    print("One-hot encoding categorical variables...")
     data = one_hot_encode(data, variables)
+
+    X, y = split_data(data)
+    cv_scores = train_dt(X, y)
+    print(f"Cross-validation scores: {cv_scores}")
 
